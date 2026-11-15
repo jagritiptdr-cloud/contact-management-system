@@ -546,11 +546,11 @@ mark { background: linear-gradient(transparent 55%, #fde68a 55%); color: inherit
 .tree-svg .node.more text { fill: var(--muted); font-size: 10px; }
 .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
 .legend span { display: flex; align-items: center; gap: 7px; }
-.lg { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 2px solid #a5a8f5; background: var(--surface); }
-.lg.hl { background: var(--primary); border-color: var(--primary); }
-.lg.found { background: #ec4899; border-color: #ec4899; }
-.lg.end { border: 3px solid var(--success); }
-.lg.more { border-style: dashed; border-color: var(--muted); }
+.lgd { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 2px solid #a5a8f5; background: var(--surface); }
+.lgd.hl { background: var(--primary); border-color: var(--primary); }
+.lgd.found { background: #ec4899; border-color: #ec4899; }
+.lgd.end { border: 3px solid var(--success); }
+.lgd.more { border-style: dashed; border-color: var(--muted); }
 .match-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; align-items: center; }
 .m-chip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 4px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; font-weight: 600; transition: .2s; }
 .m-chip:hover { border-color: var(--primary); color: var(--primary); }

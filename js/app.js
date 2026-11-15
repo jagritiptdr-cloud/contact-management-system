@@ -787,7 +787,7 @@ const VIZ = {
         <div class="path-chips">${pathChips}</div>
       </div>
       ${body}
-      <div class="legend"><span><i class="lg hl"></i>Current prefix node</span><span><i class="lg end"></i>Word ends here</span><span><i class="lg more"></i>More children hidden</span></div>
+      <div class="legend"><span><i class="lgd hl"></i>Current prefix node</span><span><i class="lgd end"></i>Word ends here</span><span><i class="lgd more"></i>More children hidden</span></div>
       ${matches.length ? `<div class="match-row">${matches.slice(0, 14).map(c => `<button class="m-chip" data-open="${c.id}">${avatar(c, 'xs')}${esc(c.name)}</button>`).join('')}${matches.length > 14 ? `<span class="muted">+${matches.length - 14} more</span>` : ''}</div>` : ''}`;
   },
 
@@ -830,7 +830,7 @@ const VIZ = {
         ${q ? `<div class="path-chips">${steps.map((s, k) => `<span class="pchip ${k === steps.length - 1 && found ? 'last' : ''}">${esc(s)}</span>`).join('<span class="parrow">→</span>')}${found ? `<span class="ok-note">found in ${path.length} comparison${path.length === 1 ? '' : 's'}</span>` : '<span class="bad-note">not found</span>'}</div>` : ''}
       </div>
       ${body}
-      <div class="legend"><span><i class="lg hl"></i>Search path</span><span><i class="lg found"></i>Found</span><span><i class="lg plain"></i>bf = balance factor</span></div>`;
+      <div class="legend"><span><i class="lgd hl"></i>Search path</span><span><i class="lgd found"></i>Found</span><span><i class="lgd plain"></i>bf = balance factor</span></div>`;
   },
 
   stack() {
@@ -898,7 +898,7 @@ const VIZ = {
       ${vizIntro('Min-Heap — Birthday reminders', 'Each contact is pushed into a <b>priority queue</b> with priority = days until their next birthday. The smallest value always sits at the <b>root</b>, so the nearest birthday is popped first. Parent ≤ children at every level.',
         [['Heap size', arr.length], ['Height', arr.length ? Math.floor(Math.log2(arr.length)) + 1 : 0], ['Push / Pop', 'O(log n)'], ['Peek min', 'O(1)']])}
       ${root ? `<div class="svg-scroll">${treeSVG(layoutGeneric(root), { gx: 56, gy: 84, r: 20 })}</div>` : '<div class="viz-empty">No birthdays saved yet.</div>'}
-      <div class="legend"><span><i class="lg found"></i>Root = next birthday</span><span><i class="lg plain"></i>Number = days left</span></div>
+      <div class="legend"><span><i class="lgd found"></i>Root = next birthday</span><span><i class="lgd plain"></i>Number = days left</span></div>
       <h4 class="viz-sub">Array representation</h4>
       <div class="heap-arr">${arr.map((x, k) => `<div class="ha-cell ${k === 0 ? 'min' : ''}"><small>${k}</small><b>${x.days}</b></div>`).join('')}</div>`;
   },
