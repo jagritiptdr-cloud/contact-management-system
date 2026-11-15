@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContactSphere — Contact Management System</title>
+  <meta name="description" content="A static Contact Management System powered by hand-written data structures: HashMap, Trie, AVL Tree, Stack, Queue and Min-Heap." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo"><span data-icon="layers" data-size="22"></span></div>
+        <div>
+          <h1>ContactSphere</h1>
+          <small>Smart Contact Manager</small>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <span class="nav-label">Menu</span>
+        <button class="nav-item active" data-view="dashboard"><span data-icon="grid"></span>Dashboard</button>
+        <button class="nav-item" data-view="contacts"><span data-icon="users"></span>All Contacts <em class="nav-count" id="navCountAll">0</em></button>
+        <button class="nav-item" data-view="favorites"><span data-icon="star"></span>Favorites <em class="nav-count" id="navCountFav">0</em></button>
+        <span class="nav-label">Under the hood</span>
+        <button class="nav-item" data-view="visualizer"><span data-icon="tree"></span>DS Visualizer</button>
+        <button class="nav-item" data-view="about"><span data-icon="info"></span>About Project</button>
+      </nav>
+
+      <div class="ds-card">
+        <div class="ds-card-title"><span data-icon="zap" data-size="16"></span> Live engine</div>
+        <div class="ds-pills">
+          <span>HashMap</span><span>Trie</span><span>AVL Tree</span><span>Stack</span><span>Queue</span><span>Min-Heap</span>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <span class="t-light"><span data-icon="moon" data-size="16"></span> Dark mode</span>
+        <span class="t-dark"><span data-icon="sun" data-size="16"></span> Light mode</span>
+      </button>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+
+    <!-- ============ MAIN ============ -->
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu"><span data-icon="menu"></span></button>
+        <div class="search">
+          <span data-icon="search"></span>
+          <input id="searchInput" type="text" placeholder="Search by name, company, email or phone…" autocomplete="off" />
+          <span class="search-meta" id="searchMeta"></span>
+          <kbd>/</kbd>
+        </div>
+        <button class="btn btn-ghost" id="undoBtn" title="Undo (Ctrl+Z)">
+          <span data-icon="undo"></span><span class="hide-sm">Undo</span><em class="badge" id="undoCount">0</em>
+        </button>
+        <button class="btn btn-primary" id="addBtn"><span data-icon="plus"></span><span class="hide-sm">New Contact</span></button>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="hero">
+          <div class="hero-text">
+            <p class="hero-date" id="heroDate"></p>
+            <h2 id="heroGreeting">Hello 👋</h2>
+            <p>Manage every contact in one place — searched with a <b>Trie</b>, stored in a <b>HashMap</b>, sorted by an <b>AVL Tree</b>.</p>
+            <div class="hero-actions">
+              <button class="btn btn-light" data-goto="contacts"><span data-icon="users"></span>Browse contacts</button>
+              <button class="btn btn-outline-light" data-goto="visualizer"><span data-icon="tree"></span>See data structures</button>
+            </div>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="orbit o1"></div><div class="orbit o2"></div>
+            <div class="hero-avatars" id="heroAvatars"></div>
+          </div>
+        </div>
+
+        <div class="stats" id="stats"></div>
+
+        <div class="dash-grid">
+          <div class="panel">
+            <div class="panel-head"><h3>Contacts by group</h3><span class="chip-ds">HashMap scan · O(n)</span></div>
+            <div id="groupBars" class="group-bars"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Recently viewed</h3><span class="chip-ds">Circular Queue · O(1)</span></div>
+            <div id="recentList" class="mini-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Upcoming birthdays</h3><span class="chip-ds">Min-Heap · O(log n)</span></div>
+            <div id="birthdayList" class="mini-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Activity log</h3><span class="chip-ds">Every operation timed</span></div>
+            <div id="activityList" class="activity"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACTS / FAVORITES (shared) -->
+      <section class="view" id="view-contacts">
+        <div class="page-head">
+          <div>
+            <h2 id="contactsTitle">All Contacts</h2>
+            <p id="contactsSub" class="muted"></p>
+          </div>
+          <div class="toolbar">
+            <label class="select">
+              <span data-icon="list" data-size="16"></span>
+              <select id="sortSelect">
+                <option value="az">Name A → Z (AVL in-order)</option>
+                <option value="za">Name Z → A (AVL reverse)</option>
+                <option value="new">Newest first (Merge Sort)</option>
+                <option value="old">Oldest first (Merge Sort)</option>
+              </select>
+            </label>
+            <div class="seg" id="layoutSeg">
+              <button data-layout="grid" class="active" title="Grid"><span data-icon="grid" data-size="16"></span></button>
+              <button data-layout="list" title="List"><span data-icon="list" data-size="16"></span></button>
+            </div>
+          </div>
+        </div>
+        <div class="chips" id="groupChips"></div>
+        <div id="contactsWrap" class="cards grid"></div>
+      </section>
+
+      <!-- VISUALIZER -->
+      <section class="view" id="view-visualizer">
+        <div class="page-head">
+          <div>
+            <h2>Data Structure Visualizer</h2>
+            <p class="muted">Live view of the structures that power this app. Add, edit or delete a contact and watch them change.</p>
+          </div>
+        </div>
+        <div class="tabs" id="vizTabs">
+          <button data-tab="hashmap" class="active">HashMap</button>
+          <button data-tab="trie">Trie</button>
+          <button data-tab="avl">AVL Tree</button>
+          <button data-tab="stack">Undo Stack</button>
+          <button data-tab="queue">Recent Queue</button>
+          <button data-tab="heap">Min-Heap</button>
+          <button data-tab="complexity">Complexity</button>
+        </div>
+        <div class="panel viz-panel" id="vizBody"></div>
+      </section>
+
+      <!-- ABOUT -->
+      <section class="view" id="view-about">
+        <div class="about">
+          <div class="about-hero">
+            <span class="eyebrow">Mini Project · Data Structures</span>
+            <h2>Contact Management System</h2>
+            <p>A fully static web application (HTML · CSS · JavaScript) where every core operation is backed by a data structure written from scratch — no frameworks, no database, no server.</p>
+          </div>
+
+          <div class="about-grid">
+            <div class="panel">
+              <h3>🎯 Objective</h3>
+              <p>To design an efficient contact manager that shows how choosing the right data structure makes each operation fast — instant search while typing, always-sorted lists, one-click undo and smart reminders.</p>
+            </div>
+            <div class="panel">
+              <h3>❓ Problem statement</h3>
+              <p>A simple array of contacts needs <b>O(n)</b> time to search, <b>O(n log n)</b> to sort every time, and cannot undo mistakes. As the list grows, the app becomes slow. We replace the array with specialised structures.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>🧱 Data structures used</h3>
+            <div class="table-wrap">
+              <table class="ds-table">
+                <thead><tr><th>Data structure</th><th>Used for</th><th>Why this one?</th><th>Complexity</th></tr></thead>
+                <tbody>
+                  <tr><td><b>HashMap</b> <small>(separate chaining, djb2 hash)</small></td><td>Store contacts by ID; detect duplicate phone numbers</td><td>Direct lookup without scanning the list</td><td><code>O(1)</code> avg</td></tr>
+                  <tr><td><b>Trie</b> <small>(prefix tree)</small></td><td>Live search & autocomplete on name, company, email, phone</td><td>Search time depends on query length, not number of contacts</td><td><code>O(L)</code></td></tr>
+                  <tr><td><b>AVL Tree</b> <small>(self-balancing BST)</small></td><td>Alphabetical A→Z / Z→A listing</td><td>List stays sorted after every insert/delete; rotations keep height ≈ log n</td><td><code>O(log n)</code></td></tr>
+                  <tr><td><b>Stack</b> <small>(LIFO)</small></td><td>Undo add / edit / delete / favourite</td><td>The last action must be undone first</td><td><code>O(1)</code></td></tr>
+                  <tr><td><b>Circular Queue</b> <small>(FIFO, fixed size)</small></td><td>Recently viewed contacts</td><td>Oldest entry drops out automatically, no shifting</td><td><code>O(1)</code></td></tr>
+                  <tr><td><b>Min-Heap</b> <small>(priority queue)</small></td><td>Upcoming birthday reminders</td><td>Always gives the nearest birthday first</td><td><code>O(log n)</code></td></tr>
+                  <tr><td><b>Merge Sort</b></td><td>Sort by date added</td><td>Stable and guaranteed n log n</td><td><code>O(n log n)</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="about-grid three">
+            <div class="panel">
+              <h3>✨ Features</h3>
+              <ul class="ticks">
+                <li>Add, edit, delete, view contacts</li>
+                <li>Instant prefix search (Trie)</li>
+                <li>Sort A–Z, Z–A, newest, oldest</li>
+                <li>Favourites & groups</li>
+                <li>Unlimited-style undo (Ctrl + Z)</li>
+                <li>Recently viewed & birthday reminders</li>
+                <li>Import / export JSON</li>
+                <li>Dark mode & fully responsive</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>🛠 Tech stack</h3>
+              <ul class="ticks">
+                <li>HTML5 — structure</li>
+                <li>CSS3 — grid, flexbox, variables, animations</li>
+                <li>Vanilla JavaScript (ES6 classes)</li>
+                <li>SVG — tree visualisations</li>
+                <li>LocalStorage — saves data in browser</li>
+                <li>No backend, no libraries</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>🚀 Future scope</h3>
+              <ul class="ticks">
+                <li>Backend with database (MySQL / MongoDB)</li>
+                <li>Login & cloud sync</li>
+                <li>Graph of mutual connections</li>
+                <li>Import from phone (vCard)</li>
+                <li>Duplicate contact merging</li>
+                <li>Android app version</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>🗂 Project structure</h3>
+<pre class="tree-pre">contact managment system/
+├── index.html        → page layout & all screens
+├── css/style.css     → design system, themes, responsive
+├── js/ds.js          → HashMap, Trie, AVL, Stack, Queue, Heap, MergeSort
+├── js/data.js        → sample contacts
+└── js/app.js         → ContactBook logic + UI rendering</pre>
+          </div>
+
+          <div class="panel data-tools">
+            <div>
+              <h3>💾 Data tools</h3>
+              <p class="muted">Your contacts are saved in this browser. Export them as a backup or load the demo data again.</p>
+            </div>
+            <div class="row-btns">
+              <button class="btn btn-ghost" id="exportBtn"><span data-icon="download"></span>Export JSON</button>
+              <button class="btn btn-ghost" id="importBtn"><span data-icon="upload"></span>Import JSON</button>
+              <button class="btn btn-danger-ghost" id="resetBtn"><span data-icon="reset"></span>Reset demo data</button>
+              <input type="file" id="importFile" accept="application/json,.json" hidden />
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ ADD / EDIT MODAL ============ -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div class="modal-avatar" id="modalAvatar">?</div>
+        <div>
+          <h3 id="modalTitle">New contact</h3>
+          <p class="muted" id="modalSub">Inserted into HashMap, Trie & AVL Tree</p>
+        </div>
+        <button class="icon-btn" data-close aria-label="Close"><span data-icon="x"></span></button>
+      </div>
+      <form id="contactForm" novalidate>
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <div class="photo-pick span-2">
+            <div class="avatar photo-prev" id="photoPrev">?</div>
+            <div class="photo-pick-body">
+              <b>Profile photo</b>
+              <small class="muted">JPG / PNG — auto cropped & resized</small>
+              <div class="photo-btns">
+                <label class="btn btn-ghost sm"><span data-icon="upload" data-size="16"></span><span id="photoLabel">Upload photo</span><input type="file" id="photoInput" accept="image/*" hidden /></label>
+                <button type="button" class="btn btn-danger-ghost sm" id="photoRemove" hidden><span data-icon="trash" data-size="16"></span>Remove</button>
+              </div>
+            </div>
+          </div>
+          <label class="field span-2"><span>Full name *</span><input name="name" required maxlength="40" placeholder="e.g. Aarav Sharma" /><small class="err"></small></label>
+          <label class="field"><span>Phone *</span><input name="phone" required inputmode="tel" maxlength="15" placeholder="10-digit mobile" /><small class="err"></small></label>
+          <label class="field"><span>Email</span><input name="email" type="email" placeholder="name@example.com" /><small class="err"></small></label>
+          <label class="field"><span>Company / College</span><input name="company" maxlength="40" placeholder="Optional" /></label>
+          <label class="field"><span>Group</span>
+            <select name="group">
+              <option>Family</option><option>Friends</option><option selected>Work</option><option>College</option><option>Other</option>
+            </select>
+          </label>
+          <label class="field"><span>Birthday</span><input name="birthday" type="date" /></label>
+          <label class="field"><span>City / Address</span><input name="address" maxlength="60" placeholder="Optional" /></label>
+          <label class="field span-2"><span>Notes</span><textarea name="notes" rows="2" maxlength="200" placeholder="Anything to remember…"></textarea></label>
+          <label class="check span-2"><input type="checkbox" name="favorite" /><span class="check-box"></span>Mark as favourite</label>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Save contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ DETAIL DRAWER ============ -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-card" id="drawerCard"></div>
+  </div>
+
+  <!-- ============ CONFIRM ============ -->
+  <div class="modal" id="confirm" aria-hidden="true">
+    <div class="modal-card small">
+      <div class="confirm-icon"><span data-icon="trash" data-size="26"></span></div>
+      <h3 id="confirmTitle">Delete contact?</h3>
+      <p class="muted" id="confirmText">You can still undo this.</p>
+      <div class="modal-foot center">
+        <button class="btn btn-ghost" data-close>Cancel</button>
+        <button class="btn btn-danger" id="confirmOk">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="js/ds.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
